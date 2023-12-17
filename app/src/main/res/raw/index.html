@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+</head>
+<body>
+    <style>
+        body {
+            background-color: #40444c;
+        }
+        img{
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+    <script>
+         document.addEventListener('DOMContentLoaded', init, false);
+         var socket;
+         function init(){
+            var url = 'ws://%%';
+	        socket = new WebSocket(url);
+	        socket.onopen=sendenMoeglich;
+	        socket.onclose=Closing;
+	        socket.onerror=ErrorHandler;
+	        socket.onmessage=empfange;
+         }
+
+         function ErrorHandler(event){
+               alert("Fehler:" + event.data);
+         }
+
+         function empfange(message){
+                //console.log(message);
+                var img = message.data;
+
+                if(img instanceof Blob){
+                    var urlCreator = window.URL || window.webkitURL;
+                    var imageUrl = urlCreator.createObjectURL(img);
+                    var imgCon = document.getElementById("stream");
+                    imgCon.src = imageUrl;
+                }
+                else {
+                    console.log(message.data);
+                    var json = JSON.parse(img);
+                    var height = json.height;
+                    var width = json.width;
+                    console.log("breite: " + width + " hoehe: " + height);
+                    var imgCon = document.getElementById("stream");
+                    var ratio = width / height;
+
+                    //Portrait mode
+                    if(width < height){
+                        imgCon.height = window.innerHeight - 10;
+                        imgCon.width = (window.innerHeight - 10) * ratio;
+                    }
+                    else {
+                        if(((window.innerWidth - 10) / ratio) > (window.innerHeight - 10)){
+                            imgCon.height = window.innerHeight - 10;
+                            imgCon.width = (window.innerHeight - 10) * ratio;
+                        }
+                        else {
+                            imgCon.width = window.innerWidth - 10;
+                            imgCon.height = (window.innerWidth - 10) / ratio;
+                        }
+                    }
+                }
+         }
+
+          function Closing(){
+                alert("Server has been Closed");
+          }
+
+         function sendenMoeglich(){
+
+         }
+    </script>
+    <img id="stream" height="1920" width="1080"/>
+</body>
+</html>
